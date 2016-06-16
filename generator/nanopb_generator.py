@@ -1126,6 +1126,53 @@ class ProtoFile:
                     yield '/* %s depends on runtime parameters */\n' % identifier
             yield '\n'
 
+            yield '/*Class definitions for messages */\n'
+            for msg in self.messages:
+                yield 'class %sMessage \n' % msg.name
+                yield '{ \n'
+                yield '\tpublic: \n'
+
+                yield '\t\t%sMessage()\n' % msg.name
+                yield '\t\t : data(%s_init_zero)\n' % msg.name
+                yield '\t\t{\n'
+                yield '\n'
+                yield '\t\t};\n'
+                yield '\n'
+
+                yield '\t\t%sMessage(const %s& messageIn)\n' % (msg.name,msg.name)
+                yield '\t\t : data(messageIn)\n' % msg.name
+                yield '\t\t{\n'
+                yield '\n'
+                yield '\t\t};\n'
+                yield '\n'
+
+                yield '\t\tsize_t GetSize()\n'
+                yield '\t\t{\n'
+                yield '\t\t\t return m_size; \n'
+                yield '\t\t};\n'
+                yield '\n'
+
+                yield '\t\tconst pb_field_t* GetFields()\n'
+                yield '\t\t{\n'
+                yield '\t\t\treturn m_kpDataFields;\n'
+                yield '\t\t};\n'
+                yield '\n'
+
+                yield '\t\t%s data; \n' % msg.name
+
+                yield '\n'
+                yield '\tprivate: \n'
+
+                yield '\t\tsize_t m_size\t\t\t = %s_size;\n' % msg.name
+                yield '\t\tconst pb_field_t* m_kpDataFields = %s_fields;\n' % msg.name
+
+                yield '};\n'
+                yield '\n'
+
+            yield '\n'
+
+
+
             yield '/* Message IDs (where set with "msgid" option) */\n'
 
             yield '#ifdef PB_MSGID\n'
