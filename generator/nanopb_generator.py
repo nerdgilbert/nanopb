@@ -1067,9 +1067,9 @@ class ProtoFile:
         yield '#endif\n'
         yield '\n'
 
-        yield '#ifdef __cplusplus\n'
-        yield 'extern "C" {\n'
-        yield '#endif\n\n'
+        # yield '#ifdef __cplusplus\n'
+        # yield 'extern "C" {\n'
+        # yield '#endif\n\n'
 
         if self.enums:
             yield '/* Enum definitions */\n'
@@ -1153,9 +1153,9 @@ class ProtoFile:
 
             yield '#endif\n\n'
 
-        yield '#ifdef __cplusplus\n'
-        yield '} /* extern "C" */\n'
-        yield '#endif\n'
+        # yield '#ifdef __cplusplus\n'
+        # yield '} /* extern "C" */\n'
+        # yield '#endif\n'
 
         # End of header
         yield '/* @@protoc_insertion_point(eof) */\n'
