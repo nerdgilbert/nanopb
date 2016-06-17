@@ -1037,46 +1037,6 @@ class ProtoFile:
     def generate_class(self, message):
         '''Generate skeleton class for a given message'''
 
-        yield 'class %sMessage \n' % message.name
-        yield '{ \n'
-        yield '\tpublic: \n'
-
-        yield '\t\t%sMessage()\n' % message.name
-        yield '\t\t:data(%s_init_zero)\n' % message.name
-        yield '\t\t{\n'
-        yield '\n'
-        yield '\t\t};\n'
-        yield '\n'
-
-        yield '\t\t%sMessage(const %s& messageIn)\n' % (message.name,message.name)
-        yield '\t\t : data(messageIn)\n' % message.name
-        yield '\t\t{\n'
-        yield '\n'
-        yield '\t\t};\n'
-        yield '\n'
-
-        yield '\t\tsize_t GetSize()\n'
-        yield '\t\t{\n'
-        yield '\t\t\t return m_size; \n'
-        yield '\t\t};\n'
-        yield '\n'
-
-        yield '\t\tconst pb_field_t* GetFields()\n'
-        yield '\t\t{\n'
-        yield '\t\t\treturn m_kpDataFields;\n'
-        yield '\t\t};\n'
-        yield '\n'
-
-        yield '\t\t%s data; \n' % message.name
-
-        yield '\n'
-        yield '\tprivate: \n'
-
-        yield '\t\tsize_t m_size\t\t\t = %s_size;\n' % message.name
-        yield '\t\tconst pb_field_t* m_kpDataFields = %s_fields;\n' % message.name
-
-        yield '};\n'
-        yield '\n'
 
 
     def generate_header(self, includes, headername, options):
@@ -1113,7 +1073,7 @@ class ProtoFile:
         yield '\n'
 
         #include OpenROV message parent class that all messages derive from
-        yield '#include \"OpenROVMessage.h\"\n\n'
+        yield '#include \"ROVMessage.h\"\n\n'
 
         # yield '#ifdef __cplusplus\n'
         # yield 'extern "C" {\n'
@@ -1176,7 +1136,49 @@ class ProtoFile:
 
             yield '/*Class definitions for messages */\n'
             for msg in self.messages:
-                self.generate_class(msg)
+                yield 'class %sMessage : public ROVMessage \n' % msg.name
+                yield '{ \n'
+                yield '\tpublic: \n'
+
+                yield '\t\t%sMessage()\n' % msg.name
+                yield '\t\t:data(%s_init_zero)\n' % msg.name
+                yield '\t\t{\n'
+                yield '\n'
+                yield '\t\t};\n'
+                yield '\n'
+
+                yield '\t\t%sMessage(const %s& messageIn)\n' % (msg.name,msg.name)
+                yield '\t\t : data(messageIn)\n' % msg.name
+                yield '\t\t{\n'
+                yield '\n'
+                yield '\t\t};\n'
+                yield '\n'
+
+                yield '\t\tsize_t GetSize()\n'
+                yield '\t\t{\n'
+                yield '\t\t\t return m_size; \n'
+                yield '\t\t};\n'
+                yield '\n'
+
+                yield '\t\tconst pb_field_t* GetFields()\n'
+                yield '\t\t{\n'
+                yield '\t\t\treturn m_kpDataFields;\n'
+                yield '\t\t};\n'
+                yield '\n'
+
+                yield '\t\t%s data; \n' % msg.name
+
+                yield '\n'
+                yield '\tprivate: \n'
+
+                yield '\t\tsize_t m_size\t\t\t = %s_size;\n' % msg.name
+                yield '\t\tconst pb_field_t* m_kpDataFields = %s_fields;\n' % msg.name
+
+                yield '};\n'
+                yield '\n'
+
+
+
             yield '\n'
 
             yield '/* Message IDs (where set with "msgid" option) */\n'
