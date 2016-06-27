@@ -1036,6 +1036,10 @@ class ProtoFile:
 
     def generate_class(self, message):
         '''Generate skeleton class for a given message'''
+    
+    def convert_to_snake(self,name):
+        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
 
@@ -1136,21 +1140,32 @@ class ProtoFile:
 
             yield '/*Class definitions for messages */\n'
             for msg in self.messages:
-                yield 'class %sMessage : public ROVMessage \n' % msg.name
+                yield 'class C%s : public ROVMessage\n' % (msg.name)
                 yield '{ \n'
                 yield '\tpublic: \n'
 
-                yield '\t\t%sMessage()\n' % msg.name
-                yield '\t\t:data(%s_init_zero)\n' % msg.name
+                yield '\t\tC%s()\n' % msg.name
+                yield '\t\t: m_data(%s_init_zero)\n' % msg.name
+                yield '\t\t, m_pData(nullptr)\n'
                 yield '\t\t{\n'
-                yield '\n'
+                yield '\t\t\t\tthis->SetMessageType(EMessageType::%s);\n' % (msg.name)
                 yield '\t\t};\n'
                 yield '\n'
 
-                yield '\t\t%sMessage(const %s& messageIn)\n' % (msg.name,msg.name)
-                yield '\t\t : data(messageIn)\n' % msg.name
+                yield '\t\tC%s(const %s& messageIn)\n' % (msg.name,msg.name)
+                yield '\t\t: m_data(messageIn)\n' % msg.name
+                yield '\t\t, m_pData(new %s(messageIn))\n' % msg.name
                 yield '\t\t{\n'
+                yield '\t\t\t\tthis->SetMessageType(EMessageType::%s);\n' % (msg.name)
+                yield '\t\t};\n'
                 yield '\n'
+
+                yield '\t\t~C%s()\n' % msg.name
+                yield '\t\t{\n'
+                yield '\t\t\t\tif(m_pData != nullptr)\n' % (msg.name)
+                yield '\t\t\t\t{\n'
+                yield '\t\t\t\t\t\tdelete m_pData;\n'
+                yield '\t\t\t\t}\n'
                 yield '\t\t};\n'
                 yield '\n'
 
@@ -1166,18 +1181,29 @@ class ProtoFile:
                 yield '\t\t};\n'
                 yield '\n'
 
-                yield '\t\t%s data; \n' % msg.name
+                yield '\t\tvoid Pack(const %s& messageDataIn)\n' % msg.name
+                yield '\t\t{\n'
+                yield '\t\t\tm_data = messageDataIn;\n'
+                yield '\t\t\tm_pData = new %s(m_data);\n' % msg.name
+                yield '\t\t};\n'
+                yield '\n'
+
+                yield '\t\tvoid* GetData()\n' % msg.name
+                yield '\t\t{\n'
+                yield '\t\t\treturn m_pData;\n'
+                yield '\t\t};\n'
+                yield '\n'
 
                 yield '\n'
                 yield '\tprivate: \n'
 
                 yield '\t\tsize_t m_size\t\t\t = %s_size;\n' % msg.name
                 yield '\t\tconst pb_field_t* m_kpDataFields = %s_fields;\n' % msg.name
+                yield '\t\t%s m_data; \n' % msg.name
+                yield '\t\t%s* m_pData; \n' % msg.name
 
                 yield '};\n'
                 yield '\n'
-
-
 
             yield '\n'
 
@@ -1509,7 +1535,7 @@ def process_file(filename, fdesc, options, other_files = {}):
     # Decide the file names
     noext = os.path.splitext(filename)[0]
     headername = noext + options.extension + '.h'
-    sourcename = noext + options.extension + '.c'
+    sourcename = noext + options.extension + '.cpp'
     headerbasename = os.path.basename(headername)
 
     # List of .proto files that should not be included in the C header file
